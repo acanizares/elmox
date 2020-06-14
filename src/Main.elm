@@ -1,14 +1,13 @@
 module Main exposing(..)
 
+import Node exposing (..)
+import Token exposing (..)
+
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
-
-import Scanner
-import Parser
-import Html.Events exposing (onInput)
 
 
 -- MAIN
@@ -31,16 +30,16 @@ main =
 
 type alias Model =
   { input : String
-  , scanner : Scanner.Model
-  , parser : Parser.Model
+  , tokens : List (Token)
+  , statements : List (Stmt)
   }
 
 
 init : () -> (Model, Cmd Msg)
 init _ =
   ( { input = ""
-    , scanner = {} 
-    , parser = {}
+    , tokens = [] 
+    , statements = []
     }
   , Cmd.none
   )
