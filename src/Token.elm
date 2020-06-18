@@ -7,10 +7,13 @@ type alias Token =
   , column : Int
   , literal : Literal
   }
+  
 type Literal
   = LiteralInt Int
   | LiteralFloat Float
-  | LiteralStr String 
+  | LiteralStr String
+  | LiteralBool Bool
+  | Nil
 
 type TokenType
   -- Single-character tokens.
@@ -22,7 +25,7 @@ type TokenType
   | DOT 
   | MINUS 
   | PLUS 
-  | SEMICOLON 
+  | SEMICOLON
   | COLON 
   | SLASH 
   | STAR 

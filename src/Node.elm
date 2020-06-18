@@ -1,7 +1,5 @@
 module Node exposing (..)
 
-import Token exposing (..)
-
 -- STATEMENTS
 -- "Block      : List<Stmt> statements",
 -- "Expression : Expr expression",
@@ -91,7 +89,11 @@ type GroupingExpr
   = GroupingExpr Expr
 
 type LiteralExpr
-  = LiteralExpr Token.Literal
+  = Int Int
+  | Float Float
+  | String String
+  | Bool Bool
+  | Nil
 
 type LogicalExpr
   = LogicalExpr { left : Expr, operator : Token, right : Expr }
@@ -104,3 +106,5 @@ type VariableExpr
 
 type LambdaExpr
   = LambdaExpr { params : List Token, body : List String }
+
+type alias Token = String

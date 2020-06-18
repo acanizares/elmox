@@ -1,21 +1,24 @@
-module Main exposing(..)
+module Main exposing (..)
 
-import Node exposing (..)
-import Token exposing (..)
+import LoxParser exposing (..)
 
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
+import Node exposing (..)
+import String exposing (fromFloat, fromInt)
 
 
 -- MAIN
+
 
 type alias Document msg =
   { title : String
   , body : List (Html msg)
   }
+
 
 main =
   Browser.document
@@ -26,20 +29,23 @@ main =
     }
 
 
+
 -- MODEL
+
 
 type alias Model =
   { input : String
-  , tokens : List (Token)
-  , statements : List (Stmt)
+  , tokens : List Token
+  , statements : Maybe Expr  -- FIXME
   }
 
 
-init : () -> (Model, Cmd Msg)
+
+init : () -> ( Model, Cmd Msg )
 init _ =
   ( { input = ""
-    , tokens = [] 
-    , statements = []
+    , tokens = []
+    , statements = Nothing
     }
   , Cmd.none
   )
@@ -48,17 +54,23 @@ init _ =
 
 -- UPDATE
 
+
 type Msg
   = Change String
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update (Change newContent) model =
-  ( { model | input = newContent }
-  , Cmd.none)
+  ( { model
+    | input = newContent
+    , statements = parse newContent}
+  , Cmd.none
+  )
+
 
 
 -- SUBSCRIPTIONS
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -68,18 +80,18 @@ subscriptions model =
 
 -- VIEW
 
+
 view : Model -> Document Msg
 view model =
   { title = "Elmox"
-  , body = 
-  [ header "Parse"
-  , div [ class "columns is-gapless" ]
-    [ leftColumn
-    , rightColumn model.input
+  , body =
+    [ header "Parse"
+    , div [ class "columns is-gapless" ]
+      [ leftColumn
+      , rightColumn model.statements
+      ]
     ]
-  ]}
-
-
+  }
 
 
 header : String -> Html msg
@@ -127,8 +139,9 @@ header buttonText =
       ]
     ]
 
+
 leftColumn : Html Msg
-leftColumn = 
+leftColumn =
   div [ class "column" ]
     [ section [ class "hero is-dark is-fullheight-with-navbar" ]
       [ div [ class "hero-body left-column" ]
@@ -138,13 +151,111 @@ leftColumn =
       ]
     ]
 
-rightColumn : String -> Html msg
+
+rightColumn : Maybe Expr -> Html msg
 rightColumn content =
   div [ class "column" ]
     [ section [ class "hero is-light is-fullheight-with-navbar" ]
       [ div [ class "hero-body" ]
         [ div [ class "container" ]
-            [ text content ]
+          [ tree content ]
         ]
       ]
     ]
+
+
+tree : Maybe Expr -> Html msg
+tree str =
+  case str of
+    Nothing ->
+      div [] []
+    Just expr ->
+      div [ class "tree" ]
+        [ ul []
+          [ li []
+            [ a [ href "#" ]
+              [ text "Program" ]
+            , ul []
+              [ li []
+                [ a [ href "#" ]
+                  [ text "Child" ]
+                , ul []
+                  [ leaf "Grand Child"
+                  , viewExpr expr
+                  ]
+                ]
+              , li []
+                [ a [ href "#" ]
+                  [ text "Child" ]
+                , ul []
+                  [ li []
+                    [ a [ href "#" ]
+                      [ text "Grand Child" ]
+                    , ul []
+                      [ li []
+                        [ a [ href "#" ]
+                          [ text "Grand Grand Child" ]
+                        ]
+                      ]
+                    ]
+                  , li []
+                    [ a [ href "#" ]
+                      [ text "Grand Child" ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+
+
+branch : String -> List (Html msg) -> Html msg
+branch node children =
+  case children of
+    [] ->
+      li []
+        [ a [ href "#" ]
+          [ text node ]
+        ]
+    _ ->
+      li []
+        [ a [ href "#" ]
+          [ text node ]
+        , ul []
+          children
+        ]
+
+
+leaf : String -> Html msg
+leaf str = branch str []
+
+
+viewExpr : Expr -> Html msg
+viewExpr expr =
+  case expr of
+    Literal e -> viewLiteralExpr e
+    Variable e -> viewVariableExpr e
+    Grouping e -> viewGroupingExpr e
+    _ -> leaf "Not implemented"
+
+
+viewLiteralExpr : LiteralExpr -> Html msg
+viewLiteralExpr expr =
+  case expr of
+    String string -> leaf <| "\"" ++ string ++ "\""
+    Int int -> leaf (fromInt int)
+    Float float -> leaf (fromFloat float)
+    Bool bool -> if bool then leaf "true" else leaf "false"
+    Nil -> leaf "nil"
+
+
+viewVariableExpr : VariableExpr -> Html msg
+viewVariableExpr (VariableExpr token) =
+  leaf token
+
+viewGroupingExpr : GroupingExpr -> Html msg
+viewGroupingExpr (GroupingExpr expr) =
+  branch "()" [(viewExpr expr)]
+
+
