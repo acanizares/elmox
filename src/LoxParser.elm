@@ -1,4 +1,5 @@
 module LoxParser exposing (parse)
+--module LoxParser exposing (..)
 
 import Parser exposing (..)
 import Parser.Advanced as A
@@ -50,7 +51,24 @@ groupingExpr =
     |= lazy (\_ -> expression)  -- avoid cyclic dependance
     |. A.symbol (A.Token ")" (Expecting "')' after expression."))
 
-primary : Parser Expr
+
+unaryOp : Parser Token
+unaryOp =
+  oneOf
+    [ map (\_ -> "-") (symbol "-")
+    , map (\_ -> "!") (symbol "!")
+    ]
+
+unary : Parser Expr
+unary =
+  oneOf
+    [ succeed (\t -> \e -> Unary (UnaryExpr {operator=t, right=e}))
+        |= unaryOp
+        |= lazy (\_ -> unary)
+    , primary
+    ]
+
+primary : Parser Expr  -- TODO: add lambdas
 primary =
   oneOf
     [ map (\e -> Literal e) literalExpr
@@ -61,7 +79,8 @@ primary =
 expression : Parser Expr
 expression =
   oneOf
-    [ primary
+    [ unary
+    , primary
     ]
 
 keywords =

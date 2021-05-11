@@ -176,6 +176,26 @@ tree str =
             [ a [ href "#" ]
               [ text "Program" ]
             , ul []
+              [ viewExpr expr
+              ]
+            ]
+          ]
+        ]
+
+
+
+tree2 : Maybe Expr -> Html msg
+tree2 str =
+  case str of
+    Nothing ->
+      div [] []
+    Just expr ->
+      div [ class "tree" ]
+        [ ul []
+          [ li []
+            [ a [ href "#" ]
+              [ text "Program" ]
+            , ul []
               [ li []
                 [ a [ href "#" ]
                   [ text "Child" ]
@@ -237,6 +257,7 @@ viewExpr expr =
     Literal e -> viewLiteralExpr e
     Variable e -> viewVariableExpr e
     Grouping e -> viewGroupingExpr e
+    Unary e -> viewUnaryExpr e
     _ -> leaf "Not implemented"
 
 
@@ -258,4 +279,6 @@ viewGroupingExpr : GroupingExpr -> Html msg
 viewGroupingExpr (GroupingExpr expr) =
   branch "()" [(viewExpr expr)]
 
-
+viewUnaryExpr : UnaryExpr -> Html msg
+viewUnaryExpr (UnaryExpr { operator, right }) =
+   branch operator [(viewExpr right)]
