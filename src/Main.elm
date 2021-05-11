@@ -172,14 +172,7 @@ tree str =
     Just expr ->
       div [ class "tree" ]
         [ ul []
-          [ li []
-            [ a [ href "#" ]
-              [ text "Program" ]
-            , ul []
-              [ viewExpr expr
-              ]
-            ]
-          ]
+          [ branch "Program" [viewExpr expr]]
         ]
 
 
