@@ -1,6 +1,6 @@
 # elmox
 
-A (Lox)[http://www.craftinginterpreters.com/] parser in Elm.
+A [Lox](http://www.craftinginterpreters.com/contents.html) parser in Elm.
 
 ## Run
 ```bash
